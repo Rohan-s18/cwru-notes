@@ -1,0 +1,1173 @@
+\documentclass[12pt, a4paper]{book}
+%\documentclass[12pt, letterpaper]{report}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{centernot}
+\usepackage{mathtools}
+\usepackage{qtree}
+\usepackage[colorlinks = true, allcolors = black]{hyperref}
+
+\usepackage{xparse,mathtools}
+
+\title{Introduction to Machine Learning}
+\author{The Theoretical Minimum}
+\date{Rohan Singh and Rachel Tjarksen}
+
+\begin{document}
+
+\maketitle
+
+\chapter*{Preface} 
+A lot of people have been talking about Machine Learning these days, especially with the advent of more state of the art applications such as Dall-E and ChatGPT. But what exactly is Machine Learning? and How do you do it? As the title suggests this book aims to answer these questions.\\\\
+While this book is somewhat theoretically heavy, for an introductory book at least, there are no "prerequisites" to understand the whole content of this book. All of the (basic) mathematical knowledge required to truly understand machine learning, i.e. statistics, calculus and optimization are all present in there own individual chapters, so if you've never taken an optimization or probability class (or are just rusty) don't worry about it.\\\\
+This book covers both the classical machine learning techniques such as Decision Trees, Logistic Regression and Naïve Bayes in addition to the more state of the art techniques such as Support Vector Machines and Neural Networks.\\\\
+In the future, I will be realeasing the coding "cookbook" for this book to get started on the more hands-on side of machine learning.
+
+
+\tableofcontents
+
+
+%-----------------------------------------------------
+
+\chapter{Basics of Machine Learning}
+\section{Learning}
+\textbf{Learning} denotes changes in the system that enable the system to do the same task more effectively the next time.\\\\
+The Specification for a Learning System:
+\begin{itemize}
+    \item \textbf{Given}: 
+    \begin{itemize}
+        \item Learning task goal
+        \item Task examples $E$
+        \item Performance measure $P$
+    \end{itemize} 
+
+\item \textbf{Do}: Produce a \textbf{concept} that is good with
+respect to $P$ on all examples of the task. Measured by proxy on $E$.\\
+\end{itemize}
+A \textbf{Concept} can be a function mapping that helps you perform better wrt $P$ on examples $E$. For example: for the task of playing chess, the concept would be some function mapping current state of game to suitable moves to play.
+
+\subsection{The Phases of Learning}
+There are two phases of learning a concept:
+\begin{itemize}
+    \item \textbf{Learning or Training phase}:
+    \begin{itemize}
+        \item Reason about the examples $E$
+        \item Formulate a concept that does well w.r.t. $P$ on $E$
+        \item Could also use any prior knowledge
+    \end{itemize}
+    \item \textbf{Evaluation or Testing phase}: use learned concept on future, novel examples.\\
+\end{itemize}
+There are 2 main types of learning, Online and Batch (Offline) Learning:
+\begin{itemize}
+    \item \textbf{Batch/Offline Learning}: one learning phase,
+with a large set of examples, followed by a
+testing phase.
+    \item \textbf{Online learning}: Examples arrive one at a time
+(or in small groups); learning and evaluation
+phases are iterated.\\
+\end{itemize}
+
+\subsection{Types of reasoning}
+\textbf{Inductive Generalization}: In all learning problems, need to reason from specific examples to a general case. In other words in inductive reasoning, we learn general patterns or rules from a specific set of data or examples, i.e. specific to general.\\
+Important distinction Memorization $\neq$ Learning.\\\\
+Other kinds of reasoning:
+\begin{itemize}
+    \item \textbf{deduction}: (general to specific)
+    \item \textbf{abduction}: (most likely cause)
+\end{itemize}
+
+\section{Target Concept}
+\textbf{Target Concept} refers to the unknown underlying concept that solves the learning task. Typically, $P$ will be a measure of difference between the \textbf{learner’s concept} and the \textbf{target concept}, with respect to $E$.\\\\
+E.g., “has-fur” and “long-teeth” and “looks-scary” $\implies$ “lion”.\\\\
+\textbf{Hypothesis Space:}
+\begin{itemize}
+    \item Defines the \textbf{space of general concepts} the
+learning system will consider.
+    \item For example, all possible conjunctions of animal properties like: "has-fur” and “long-teeth” and “looks-scary”, “has-
+fur” and “long-teeth” and NOT-“looks-scary” , “has-
+fur” and NOT-“long-teeth” and “looks-scary” ....
+    \item Ideally, target concept is a member of this space.
+    \item If we include all possible hypotheses, then the size of hypothesis space will increase \textit{exponentially}. Additionally, if you use a hypothesis space includes all possible hypotheses we will be \textbf{Memorizing} and will do very good in performance measures $P$ defined in $E$, but won't really learn anything.\\
+\end{itemize}
+\textbf{No "Tabula-Rasa" Learning} means that the learning algorithm or model doesn't start with a completely blank slate, i.e. devoid of any prior knowledge or biases. Instead, it implies that the learning process incorporates some existing knowledge or initial assumptions to facilitate learning more effectively or efficiently.\\\\
+This is done because:
+\begin{itemize}
+    \item A space that includes all possible hypotheses also:
+    \begin{itemize}
+        \item Contains many overly complex concepts.
+        \item Contains the concept that memorizes $E$: Indistinguishable from target by any P (w.r.t. E)
+        \item May be too big to search feasibly.
+    \end{itemize}
+    \item For effective inductive generalization:
+    \begin{itemize}
+        \item Must restrict hypothesis space
+        \item while still (hopefully) keeping the target concept in it.\\
+    \end{itemize}
+\end{itemize}
+
+\subsection{Inductive Bias}
+The set of assumptions used by a learning system to restrict its hypothesis space is called the \textbf{Inductive Bias}. This is carried out for the reasons mentioned in the "No tabula-rasa learning section". More restrictions $\implies$ higher inductive bias. There are numerical methods to mathematically quantify the inductive bias.
+
+\subsection{Supervised Learning}
+In \textbf{Supervised Learning} the examples $E$ are annotated with target concept’s output by a teacher/oracle. The objective of the learning system must find a concept that matches annotations $P$. It is defined by its use of labeled datasets to train algorithms that to classify data or predict outcomes accurately.
+
+\subsection{Example Representation}
+\textbf{Example Representation} refers to representation choice of the example space $E$. It affects reasoning and the choice of hypothesis space, and the cost of learning.\\\\
+\textbf{Feature Vector Representation} refers to representing examples as \textbf{Attribute-Value} pairs. The number of attributes in this type of representation is fixed, i.e. the values must be there. They are represented as $m \times n$ matrix.\\\\
+The types of features are:
+\begin{itemize}
+    \item Discrete, Nominal: Color $c \in $ \{Red, Blue, Green\}
+    \item Continous: Height $h \in \mathbb{R}$
+    \item Discrete, Ordered: Size $s \in $ \{Small, Medium, Large\}
+    \item Hierarchial: Shape $S \in $ \{Polygon $\to$\{Square, Triangle\} or Continous $\to$ \{Circle, Ellipse\}\}\\
+\end{itemize}
+\textbf{Feature Space} refers to the \textit{vector space} where examples are embedded in an $n$ dimensional \textit{vector space}. These mappings are sometimes arbitrary.\\\\
+Some other example representations:
+\begin{itemize}
+    \item Relational representation
+    \item Multiple-instance representation
+    \item Sequential representation
+    \item Multi-view representation
+\end{itemize}
+
+\section{Binary Classification problem}
+In \textbf{Binary Classification Problem} the task of the learner is to  produce annotations that match the annotations provided by the teacher/oracle. The Target concept assigns one of two labels (“positive” or “negative”) to all examples \textit{the
+class label}.\\\\
+The Learning Problem is:
+\begin{itemize}
+    \item Given: A binary classification problem
+    \item Do: Produce a “classifier” (concept) that assigns a label to a new example.\\
+\end{itemize}
+The job of the learner is to find a (Union of) $n$-dimensional volume(s) in feature space (possibly a disjoint collection), where each of the volume(s) refers to one of the labels. The \textbf{Decision Boundary} refers to the separating surface in the $n$-dimensional feature space that separates the aforementioned volume(s).\\\\
+\newpage
+
+
+%-----------------------------------------------------
+
+\chapter{Probability}
+
+\section{Introductory Probability}
+\subsection{Axioms of Probability}
+For any event $E$, we have its probability given by:
+$$\text{Pr}(E): \quad 0 \leq \text{Pr}(E) \leq 1$$
+For the sample space of all events $E$, known as $\Omega \iff \bigcup_{\forall i}E_i$ has probabilty given by:
+$$\text{Pr}(\Omega) = 1$$
+For $n$ mutually disjoint events, we have:
+$$\text{Pr}(\bigcup_{i=1}^nE_i) = \sum^n_{i=1}\text{Pr}(E_i)$$\\
+Additionally, if the probability of events is given as a function over a continuous space $[a,b]$, we have the equivalent:
+$$\int^{b}_{a}P(x)dx = 1$$
+
+\subsection{Probability Density Functions}
+A function that maps every value of a random variable to a probability is called a \textbf{probability density function} or pdf. Probability density functions, like all functions, can be defined over both discrete or continous spaces.\\\\
+We can define a general probability density function over a discrete space as:
+$$P(x) = \begin{cases}
+    0.8 & \text{if $x$ is True}\\
+    0.2 & \text{if $x$ is False}
+\end{cases}$$\\
+Additionally, we can define a general probability density function over a continuous space as a function:
+$$P(x) = \frac{1}{2\pi}e^{-\frac{1}{x^2}}\ , \quad \forall x \in \mathbb{R}$$
+\textbf{Note:} In the case (such as the gaussian distribution given above), we find the probability over a space $[a,b]$, by calculating the integral:
+$$P(x \in [a,b]) = \int^{b}_{a}P(x)dx$$\\
+As the axioms of probability suggest, over all of the $n$ disjoint events $x_i$ in the sample space of $X$:
+$$\sum^{n}_{i=1}P(X=x_i) = 1$$
+$$\int^{b}_{a}P(x)dx = 1 \quad \text{for $P(x)$ defined in the space $\forall x \in [a,b]$}$$
+
+\subsection{Joint Probability Density Functions}
+Using joint probability, we can define joint density functions for the probabilities of collections of random variables. We can define a Joint probability density function over two random variables $R$ and $C$ as:
+$$P_{R,C}(R=x,C=y) = \begin{cases}
+    0.5 & \text{if $x$ is True, $y$ is True}\\
+    0.2 & \text{if $x$ is True, $y$ is False}\\
+    0.2 & \text{if $x$ is False, $y$ is True}\\
+    0.1 & \text{if $x$ is False, $y$ is False}\\
+\end{cases}$$\\
+We can once again define the axiom of probabilty as:
+$$\sum_{\forall x \in R,\ y \in C}P(R=x,C=y) = 1$$
+
+\section{Conditional Probability}
+We can additionally define the probability of a specific event $x$ of a random variable $X$ happening given that a specific event $y$ of a random variable $Y$ took place, as the \textbf{Conditional Probability} of $X=x$ given $Y=y$. It is given by the formula:
+$$P_{X|Y}(X=x|Y=y) = \frac{P_{X,Y}(X=x,Y=y)}{P_Y(Y=y)}$$\\
+From the definition of Conditional Probability, we can derive the \textbf{Product Rule}, which is used to find the probability of an event $x \in X$ and $y \in Y$ both happening. It is given by:
+$$P_{X,Y}(X=x,Y=y) = P_Y(Y=y)P_{X|Y}(X=x|Y=y)  = P_X(X=x)P_{Y|X}(Y=y|X=x)$$\\
+Using these set of equations, we can find the \textbf{marginal probability} of an event $x \in X$ from a joint probability distribution by the formula:
+$$P_X(X=x) = \sum_{\forall y \in Y}P(X=x, Y=y)$$
+$$P_Y(Y=y) = \sum_{\forall x \in X}P(Y=y, X=x)$$
+We can use the product rule to obtain the marginal probability, known as the \textbf{conditioning}, which is given by the set of formulas:
+$$P_X(X=x) = \sum_{\forall y \in Y}P(X=x| Y=y)P(Y=y)$$
+$$P_Y(Y=y) = \sum_{\forall x \in X}P(Y=y| X=x)P(X=x)$$
+
+\subsection{Bayes' Rule}
+\textbf{Bayes' Rule} gives us a formula for obtaining the conditional probability of a specific event $x$ of a random variable $X$ happening given that a specific event $y$ of a random variable $Y$ took place, using the definition of conditional probability, the product rule and conditioning. This simplified formula is given by:
+$$P(C=c|E=e) = \frac{P(E=e|C=c)P(C=c)}{\sum_{\forall c' \in C}P(E=e| C=c')P(C=c')}$$\\
+The reasons why Bayes' Rule is important is because:
+\begin{itemize}
+    \item Let $C$ be a random variable with values that are possible “causes”
+    \item Let $E$ denote a random variable with values that are possible effects of each cause
+    \item  It is often easy to specify $P(E=e|C=c)$, much harder to specify $P(C=c|E=e)$
+    \item Bayes’ Rule therefore allows us to reason backwards over uncertain events which is fundamental to learning.
+\end{itemize}
+
+\subsection{Statistical and Conditional Independence}
+Two random variables $X$ and $Y$ are said to be \textbf{Statistically Independent} if:
+$$P_{X,Y}(X=x,Y=y) = P_X(X=x)P_Y(Y=y)$$
+Using this definition we can deduce that:
+$$P_{X|Y}(X=x|Y=y) = P(X=x)$$
+$$P_{Y|X}(Y=y|X=x) = P(Y=y)$$\\
+Two Random Variables $X$ and $Y$ are said to be \textbf{Conditionally Independent} given a third random variable $R$, if:
+$$P_{X,Y|R}(X=x,Y=y|R=r) = P_{X|R}(X=x|R=r)P_{Y|R}(Y=y|R=r)$$
+
+\section{Expectation Values}
+The \textbf{Expectation Value} of a random variable $X$ is defined as the "average value" of the variable $X$ weighted by the probabilities for each possible value.\\\\
+For a discrete probability density function for the random variable $X$, it's expectation value is defined mathematically using the formula:
+$$E(X) = \sum_{\forall x \in X}xP(X=x)$$\\
+Additionally, For a continuous probability density function for the random variable $X$ defined over $\forall x \in [a,b] \in \mathbb{R}$, it's expectation value is defined mathematically using the formula:
+$$E(X) = \int^{b}_{a}xP(x)dx$$
+
+\subsection{Variance}
+The \textbf{Variance} of a random variable $X$ is defined as the “average spread” of values of the random variable $X$ around the average of the random variable $X$. Mathematically, the variance is defined as:
+$$V(X) = E([X - E(X)]^2)$$\\
+For a discrete probability density function for the random variable $X$, it's variance value is defined mathematically using the formula:
+$$V(X) = E([X - E(X)]^2)$$
+$$V(X) = \sum_{\forall x \in X}(x-E(X))^2P(X=x)$$\\
+Additionally, For a continuous probability density function for the random variable $X$ defined over $\forall x \in [a,b] \in \mathbb{R}$, it's variance is defined mathematically using the formula:
+$$V(X) = E([X - E(X)]^2)$$
+$$V(X) = \int^{b}_{a}(x-E(x))^2P(x)dx$$
+
+
+
+
+\newpage
+
+
+
+%-----------------------------------------------------
+
+\chapter{Decision Trees}
+\section{Decision Tress Classifiers}
+A \textbf{Decision Tree Classifier} is directed acyclic graph, where each node has at most one parent. In DTs:
+\begin{itemize}
+    \item Internal nodes: Tests on attributes
+    \item Leaves: Class labels\\
+\end{itemize}
+Classification with a decision tree:
+\begin{itemize}
+    \item Suppose we are given a tree and a new
+example
+    \item Starting at the root, check each attribute test
+    \item This identifies a path through the tree, follow
+this until we reach a leaf
+    \item Assign the class label in the leaf\\
+\end{itemize}
+
+\subsection{Decision Tree Induction}
+\textbf{Decision Tree Induction} refers to producing a decision tree given a set of examples $E$. Decision tree induction works using the idea of \textbf{recursive partitioning}. The attributes chosen are the ones that can be used to create a partition in the feature space, i.e. the features that give us the most information abt the classification.\\\\
+Recursive Partitioning Algorithm:
+\begin{itemize}
+    \item At each step, the algorithm will choose an \textit{attribute test}: If no attribute looks good, return.
+    \item The chosen test will partition the examples into
+disjoint partitions
+    \item The algorithm will then recursively call itself on each
+partition until:
+    \begin{itemize}
+        \item a partition only has data from one class (pure node)
+        \item it runs out of attributes.\\
+    \end{itemize}
+\end{itemize}
+
+\section{Entropy}
+\textbf{Choosing an attribute}: Ideally, the one that is “most predictive” of the \textit{class label}, i.e., the one that gives us the “most information” about what the label should be. This idea is captured by the \textbf{(Shannon) entropy} of a random variable. Entropy refers to the measure of the \textit{information content} in a distribution.\\\\
+\textbf{Entropy of a Random Variable} is given by the following formula:
+$$H(X) = E(-log_2(p(X)))$$
+$$H(X) = -\sum_{\forall x}p(X=x)log_2(p(X=x))$$
+Example, let $X$ have two values 0 and 1:
+\begin{enumerate}
+    \item $p(0) = 0.5, p(1) = 0.5$, then $H(X) = -2(0.5log_2(0.5)) = 1$
+    \item $p(0) = 0.99, p(1) = 0.01$, then $H(X) = -0.99log_2(0.99) - 0.01log_2(0.01) = 0.0808$
+    \item $p(0) = 0.01, p(1) = 0.99$, then $H(X) = -0.99log_2(0.99) - 0.01log_2(0.01) = 0.0808$\\
+\end{enumerate}
+\textbf{Why do we use Entropy?} Suppose we treat the class variable, $Y$, as a random variable and measure its entropy. Then we measure its entropy after \textbf{partitioning} the examples with an attribute $X$. The difference will be a measure of the \textit{information gained} about $Y$ by partitioning the examples with $X$. So if we can choose the attribute $X$ that maximizes this \textit{information gain}, we have found what we needed.
+
+\subsection{Information Gain}
+\textbf{The Information Gain} using $X$ refers to the reduction in entropy of the class label if the data is partitioned using $X$. It is given by the formula:
+$$IG(X) = H(Y) - H(Y|X)$$\\
+For a binary classification with \textit{pos and neg} examples. We'll treat it as a Bernoulli Random Variable Y, with values 0 and 1. These have probabilities: $p^+$ for positive and $p^-$ for negative. Hence, we have:
+$$H(Y) = -p^+log_2(p^+) -p^-log_2(p^-)$$
+Let the attribute $X$ have $v$ values, then:
+$$H(Y|X=v) = -p^+_{X=v}log_2(p^+_{X=v}) - p^-_{X=v}log_2(p^-_{X=v})$$
+$$H(Y|X) = \sum_{\forall v}p(X = v)H(Y|X=v)$$
+$$IG(X) = H(Y) - H(Y|X)$$\\
+The \textbf{ID3} algorithm chooses the attribute with the highest information gain over the set $S$ of attributes in each iteration.
+
+\subsection{Gain Ratio}
+\textbf{Problem}: If an attribute has a lot of values, $IG$ prefers it (resulting partitions tend to be pure). For example, an "example id" feature. This leads to memorization. One fix for this is the \textbf{Gain Ratio} which normalizes IG with entropy of the attribute’s distribution (computed from training data). It is given by:
+$$GR(X) = \frac{IG(X)}{H(X)}$$
+
+\subsection{Continous Attributes}
+We can treat Continous Attributes as discrete nominal variables and put it into buckets. However, if there are more buckets, we run into the same problem as stated above. Therefore, instead of testing for equality, we can test for inequality in the boolean test of the form $X \geq v$ (or $X \leq x$), where $v$ is a chosen \textbf{threshold}.\\\\
+The threshold is chosen by only using such threshold $v$ that separate adjacent training examples with different classes.
+
+\section{Overfitting}
+A learned concept $h$ is said to be \textbf{overfit} the training examples if the concept $h$ has:
+\begin{itemize}
+    \item Low error on the training examples.
+    \item High error on average across all other examples.
+\end{itemize}
+We can avoid the process of over-fitting by introducing a restriction on the hypothesis space to prevent overly-complex hypotheses from being learned. These restrictions are:
+\begin{itemize}
+    \item Early Stopping
+    \item Post-Pruning
+\end{itemize}
+
+\subsection{Early Stopping}
+\textbf{Early Stopping} refers to stopping the algorithm before it reaches zero error, or in the case of decision trees stopping the growth of the tree before a threshold is reached.
+\begin{itemize}
+    \item Standard algorithm stops growing the tree
+when $IG(X)=0 \quad \forall X$
+    \item Early stopping stops growing the tree when
+    $IG(X) \leq \epsilon$, for some chosen $\epsilon$
+    \item Sensitive to choice of $\epsilon$
+    \item Easy to implement, but does not work very
+well in practice
+\end{itemize}
+
+\subsection{Post-Pruning}
+In \textbf{Post-Pruning} we construct the decision tree while hold aside some training examples at start known as the \textbf{validation set}. We then grow tree as usual on remainder and then run a greedy pruning algorithm at the end.\\\\
+\textbf{Greedy Pruning Algorithm}:
+\begin{enumerate}
+    \item For each internal node, construct a tree without that
+node:
+    \begin{itemize}
+        \item Convert node to leaf by predicting majority class
+        \item Delete subtree below node
+    \end{itemize}
+    \item Evaluate this pruned tree on the validation set.
+    \item Find the single node that improves performance the most over the unpruned tree and remove it.
+    \item Repeat steps above until no node removal improves
+performance
+\end{enumerate}
+
+\section{Extenstions of Decision Trees}
+The idea of Decision Trees can be used to handle:
+\begin{itemize}
+    \item Multiclass Classification
+    \item Regression
+    \item Functional tests in internal nodes (Function Trees) 
+    \item More complex functions in leaves (Model Trees)
+    \item Density functions in leaves (PETs)
+\end{itemize}
+
+\subsection{Pros and Cons of Decision Trees}
+\textbf{Pros:}
+\begin{itemize}
+    \item Does not require metric space representation
+    \item Produces human-comprehensible concepts
+    \item Can produce concepts with range of complexity
+    \item Easily extendable to various other scenarios
+    \item Easy to combine with other algorithms (general purpose partitioning)\\
+\end{itemize}
+\textbf{Cons:}
+\begin{itemize}
+    \item Attributes with lots of values (including continuous attributes)
+    \item Attributes with complex interactions
+    \item Partitioning strategy means easier to overfit as depth increases
+\end{itemize}
+\newpage
+
+\chapter{Evaluation of Algorithms}
+The aim of evaluation is to get a reliable measure of expected future performance of the learning algorithm on a specific learning problem. This is done by separating available data into sets for training and evaluation.
+
+\section{Performance Evaluation}
+\subsection{Ideal Case}
+In the ideal case we have a training set and testing set for each of the $n$ classifiers, such that:
+$$\textbf{Trainset 1 } \xrightarrow[\text{Algorithm}]{\text{Learning}} \textbf{Classifier 1} \xrightarrow{\text{Test}} \textbf{Test Set 1} \xrightarrow{} \textbf{Performance Measure 1}$$
+$$\textbf{Trainset 2 } \xrightarrow[\text{Algorithm}]{\text{Learning}} \textbf{Classifier 2} \xrightarrow{\text{Test}} \textbf{Test Set 2} \xrightarrow{} \textbf{Performance Measure 2}$$
+$$\vdots$$
+$$\textbf{Trainset $n$} \xrightarrow[\text{Algorithm}]{\text{Learning}} \textbf{Classifier $n$} \xrightarrow{\text{Test}} \textbf{Test Set $n$} \xrightarrow{} \textbf{Performance Measure $n$}$$\\
+However, we sometimes don't have enough training examples. Additionally
+
+\subsection{n-fold cross validation}
+In $n$-fold cross validation the data is partitioned into $n$ independent \textbf{folds}. Some of these folds are used to train the classifiers, while the remaining ones are used as test sets.
+
+\subsection{Stratified Cross Validation}
+\textbf{Stratified Cross Validation} is the same as cross validation, but folds are sampled so the proportions of class labels are the same in each fold and equal to the overall proportion. This Produces more stable performance estimates overall, recommended.
+
+\subsection{Internal Cross Validation}
+Can use same method to tune parameters, select features, prune trees etc, we do another m-fold cross validation within each fold . In this case, held out data is called “validation set” or “tuning set”. Each fold might produce different parameter settings. Need a consensus procedure to identify a single setting and Needs many examples to work well.
+
+\section{Contingency Table}
+A \textbf{Contingency Table} is used to visualize the accuracy of the classifier, by seeing the true/false numbers for each predicted label. On the y-axis we have the predicted labels and the x-axis we have the true labels.
+\begin{table*}[ht]
+    \centering
+\caption{Contingency Table}
+\label{tab:my_label}
+    \begin{tabular}
+    {|c|c|} \hline 
+         True Positive (TP)& False Positive (FP)\\ \hline 
+         False Negative (FN)& True Negative (TN)\\ \hline
+    \end{tabular}
+\end{table*}
+These are some of the shorthand notations:
+\begin{itemize}
+    \item \textbf{TP}: True Positive
+    \item \textbf{TN}: True Negative
+    \item \textbf{FP}: False Positive
+    \item \textbf{FN}: False Negative
+\end{itemize}
+
+\subsection{Accuracy}
+The \textbf{Accuracy} of a classifier is the most commonly used measure for comparing classification algorithms by calculating what fraction of labels were correctly classified. The mathematical formula for Accuracy is:
+$$\text{Accuracy} = \frac{TN+TP}{TN+TP+FN+FP}$$
+The \textbf{Error Rate} of a classifier is the inverse of accuracy, i.e. it is used to see what fraction labels were incorrectly classified by the classifier. The mathematical formula for the error rate is:
+$$\text{Error Rate} = \frac{FN+FP}{FN+FP+TN+TP}$$\\
+The Weaknesses of Accuracy is that it does not account for:
+\begin{itemize}
+    \item Skewed class distributions
+    \item Differential misclassification costs
+    \item Confidence estimates from learning algorithms\\
+\end{itemize}
+The \textbf{Weighted/Balanced} Accuracy is a measure of classifier that corrects for skewed class distributions. This is done by weighing the true positive rate and the true negative rate.
+$$\text{True Positive Rate} = \frac{TP}{TP+FN}$$
+$$\text{True Negative Rate} = \frac{TN}{TN+FP}$$
+$$WAcc = \frac{1}{2}\left(\text{True Positive Rate} + \text{True Negative Rate}\right)$$
+$$WAcc = \frac{1}{2}\left(\frac{TP}{TP+FN} + \frac{TN}{TN+FP}\right)$$
+
+\subsection{Single Class Measurement}
+Sometimes, our classifiers only care about a single label, i.e. find just a single class is “interesting”, we call this the “positive” class.\\\\
+\textbf{Precision} refers to the fraction of correctly predicted positive labels to the total number of positively predicted labels, i.e. of the examples the learner predicted positive, how many were actually positive. It is represented mathematically using the formula:
+$$\text{Precision} = \frac{TP}{TP+FP}$$\\
+\textbf{Recall/TP rate/Sensitivity} refers to the fraction of correctly predicted positive labels to the total number of positive labels, i.e. of the examples that were actually positive, how many did the learner predict correctly. It is calculated mathematically using the formula:
+$$\text{Recall} = \frac{TP}{AllPos} =\frac{TP}{TP+FN}$$
+\textbf{Specificity/TN rate} is the counterpart of recall for the negative class, which refers to the fraction of correctly predicted negative labels to the total number of negative labels, i.e. of the examples that were actually negative, how many did the learner predict correctly. It is calculated mathematically using the formula:
+$$\text{Specificity} = \frac{TN}{AllNeg} =\frac{TN}{TN+FP}$$
+Using these formulas we can obtain another formula for the weighted accuracy:
+$$WAcc = \frac{1}{2}(\text{Sensitivity}+\text{Specificity})$$\\
+\textbf{$F_1$ score} Combines precision and recall into a single measure, giving each equal weight. It is given mathematically by the formula:
+$$\frac{1}{F_1} = \frac{1}{2}\left(\frac{1}{Precision} + \frac{1}{Recall} \right)$$
+$$F_1 = \frac{2}{\frac{1}{Precision} + \frac{1}{Recall}}$$
+
+%-----------------------------------------------------
+
+
+\newpage
+
+\chapter{Calculus}
+\section{Functions}
+A function $f$ is defined as a mapping between two spaces, formally defined over fields as:
+$$f: \mathbb{F}^n \to \mathbb{F}^m$$\\
+Partial Derivatives are taken by holding the other components of the vector function fixed. Suppose for $f: \mathbb{R}^2 \to \mathbb{R}$, we have:
+$$\frac{\partial f}{\partial x}\Big|_{x,y} = \lim_{\Delta x \to 0}\frac{f(x+\Delta x,y) - f(x,y)}{\Delta x}$$
+$$\frac{\partial f}{\partial y}\Big|_{x,y} = \lim_{\Delta y \to 0}\frac{f(x,y+\Delta y) - f(x,y)}{\Delta y}$$
+
+\subsection{Partial Derivative Rules}
+These are some of the rules of partial derivatives for functions:\\
+\textbf{Sum Rule:}
+$$\frac{\partial}{\partial x}(f(x) + g(x)) = \frac{\partial f(x)}{\partial x} + \frac{\partial g(x)}{\partial x}$$
+\textbf{Product Rule:}
+$$\frac{\partial}{\partial x}(f(x)g(x)) = g(x)\frac{\partial f(x)}{\partial x} + f(x)\frac{\partial g(x)}{\partial x}$$
+\textbf{Chain Rule:}
+$$\frac{\partial}{\partial x}(f(g(x))) = \frac{\partial f(g)}{\partial g}\frac{\partial g(x)}{\partial x}$$
+
+\subsection{Multivariate Functions}
+\textbf{Multivariate Functions} are defined as functions that are defined as $f: \mathbb{F}^m \to \mathbb{F}$.\\\\
+The Jacobian or Gradient of a function $f: \mathbb{R}^m \to \mathbb{R}$ is defined as a row vector:
+$$\triangledown_{x_1,x_2..x_m}f = \begin{bmatrix}
+    \frac{\partial f}{\partial x_1} & \frac{\partial f}{\partial x_2} & \ldots & \frac{\partial f}{\partial x_m}
+\end{bmatrix}_{1 \times m}$$
+
+\subsection{Vector Functions}
+\textbf{Vector Functions} are defined as functions that are defined as $f: \mathbb{F} \to \mathbb{F}^m$\\\\
+The Jacobian of a function $f: \mathbb{R} \to \mathbb{R}^m$ is defined as a column vector:
+$$\triangledown_xf = \begin{bmatrix}
+    \frac{\partial f_1}{\partial x}\\\\
+    \frac{\partial f_2}{\partial x}\\
+    \vdots\\
+    \frac{\partial f_m}{\partial x}
+\end{bmatrix}_{m \times 1}$$
+
+\subsection{Multivariate Vector Functions}
+\textbf{Multivariate Vector Functions} are defined as $$f: \mathbb{F}^n \to \mathbb{F}^m$$
+The Jacobian of a function $f: \mathbb{R}^m \to \mathbb{R}^n$ is defined as a $n \times m$ ($n$ rows and $m$ columns) matrix, given as:
+$$\triangledown_xf = \begin{bmatrix}
+    \frac{\partial f_1}{\partial x_1} & \frac{\partial f_1}{\partial x_2} & \ldots & 
+    \frac{\partial f_1}{\partial x_m}\\\\
+    \frac{\partial f_2}{\partial x_1} & \frac{\partial f_2}{\partial x_2} & \ldots & \frac{\partial f_2}{\partial x_m}\\
+    \vdots & \vdots & \ddots & \vdots\\
+    \frac{\partial f_n}{\partial x_1} & \frac{\partial f_n}{\partial x_2} & \ldots & \frac{\partial f_n}{\partial x_m}
+\end{bmatrix}_{n \times m}$$
+
+
+\section{Multivariate Partial Derivatives}
+
+\subsection{Higher Order Derivatives and Hessian matrices}
+\textbf{Hessian Matrices} are defined as the matrix of second order derivatives of a multivariate function $f$ defined as: $f: \mathbb{F}^m \to \mathbb{F}$. For this function $F$, the hessian matrix will have be of dimension $m \times m$. It can be denoted as:
+$$\triangledown^2_{x_1,x_2..x_m}f = \begin{bmatrix}
+    \frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1\partial x_2} & \ldots & \frac{\partial^2 f}{\partial x_1\partial x_m}\\\\
+    \frac{\partial^2 f}{\partial x_2\partial x_1} & \frac{\partial^2 f}{\partial x_2^2} & \ldots & \frac{\partial^2 f}{\partial x_2\partial x_m}\\
+    \vdots & \vdots & \ddots & \vdots\\
+    \frac{\partial^2 f}{\partial x_m\partial x_1} & \frac{\partial^2 f}{\partial x_m\partial x_2} & \ldots & \frac{\partial^2 f}{\partial x_m^2}
+\end{bmatrix}_{m \times m}$$
+
+\subsection{Tensors}
+Let $f$ be a multivariate vector function defined as the mapping from $\mathbb{R}^m \to \mathbb{R}^n$, then the second derivative of the function $f$ is defined by a \textbf{Tensor} of size $(n\times m) \times m$, where:
+$$H_{ijk} = \frac{\partial f_i}{\partial x_k \partial x_j}$$
+For the $k$-th slice of the tensor, we can visualize it as the following \textbf{Hessian Matrix} :
+$$(\triangledown^2_xf)_k = \begin{bmatrix}
+    \frac{\partial^2 f_1}{\partial x_kx_1} & \frac{\partial^2 f_1}{\partial x_k\partial x_2} & \ldots & \frac{\partial^2 f_1}{\partial x_k\partial x_m}\\\\
+    \frac{\partial^2 f_2}{\partial x_k\partial x_1} & \frac{\partial^2 f_2}{\partial x_kx_2} & \ldots & \frac{\partial^2 f_n}{\partial x_k\partial x_m}\\
+    \vdots & \vdots & \ddots & \vdots\\
+    \frac{\partial^2 f_n}{\partial x_k\partial x_1} & \frac{\partial^2 f_n}{\partial x_k\partial x_2} & \ldots & \frac{\partial^2 f_n}{\partial x_kx_m}
+\end{bmatrix}_{n \times m}$$
+
+
+\newpage
+
+%-----------------------------------------------------
+
+\chapter{Optimization}
+\section{Introduction}
+\textbf{Optimization} refers to obtaining the function values or arguments that give us the maximum or minimum of a function. In other words we need to find the extreme values of a function $f$ (called an “objective function”). Sometimes we are interested in the extreme values themselves, while Other times we are interested in the arguments to the function that produce those extreme values (argmax, argmin). We use tools from calculus and linear algebra to solve such optimization problems.\\\\
+\textbf{Types of optimization}:
+\begin{itemize}
+    \item \textbf{Discrete vs continuous:} Objective function is defined on discrete or continuous space.
+    \item \textbf{Unconstrained vs constrained:} Whether there are additional function constraints defining the “feasible region”.\\
+\end{itemize}
+A \textbf{global minimum} for a function is a point $x$
+where $f(x) \leq f(x+u), \ \forall u \in \mathbb{R}$. Whereas, a \textbf{local minimum} is an $x$ where $f(x) \leq f(x+u), \ \forall |u|< \epsilon$, for some positive $\epsilon$.
+
+
+\subsection{Unconstrained Continous Optimization}
+Let the function $f$ be defined as $f: \mathbb{R} \to \mathbb{R}$, for example the function be: $f(x) = x^2$. In order to get the min$f(x)$ we need to find to find the points where the gradient is zero. the points with gradient zero can be local minima, local maxima or inflection points. To find such an $x$ (for minima), it should satisfy:
+$$\frac{df}{dx} = 0$$
+$$\frac{d^2f}{dx^2} > 0$$
+
+\section{Multivariate Functions}
+To optimize a multivariate function we need to once again find the extreme values of a multivariate function, which is carried out by solving the Jacobian of the function and seeing the Hessian Matrix (to see if it is minima/maxima) or whether it is a point of inflection.\\\\
+Mathematically:
+$$J = \left(\frac{\partial f}{\partial x_i} \right) = 0 \quad  \text{(jacobian is zero)}$$
+$$H = \left(\frac{\partial^2f}{\partial x_i \partial x_j} \right) > 0 \quad \text{(hessian is "positive definite")}$$
+$$$$
+Algebraically solving for the zeros of the jacobian can (most of the times) not be very trivial and may be unfeasible.
+
+\subsection{Iterative Approach}
+Initialize a solution candidate with a random guess. We will iterate through a convergence loop until we converge to a local minima  or maxima. The iterative approach can be seen as a local search algorithm to find the maxima/minima values.\\\\
+We choose a direction $d$ and stepsize $\lambda$. We move our guess in the direction $d$ with the stepsize of $\lambda$. We check the new guess by evaluating the derivative (zero or close to zero) and ensuring that the second derivative is either positive or negative (depending on max/min).
+
+\subsection{Gradient Ascent/Descent}
+\textbf{Gradient Ascent/Descent} refers to the technique of iteratively optimizing a continuous function by updating the argument vector (input vector), by updating the guesses by moving in/against the direction of the gradient.\\\\
+From the current $x$, move in the gradient direction (for maximization) or negative gradient direction (for minimization). Mathematically, for gradient ascent we have:
+$$x_{new} = x_{old} + \lambda \frac{\partial f}{\partial x}\Big|_{x_{old}}$$
+Similarly, for gradient descent we have:
+$$x_{new} = x_{old} - \lambda \frac{\partial f}{\partial x}\Big|_{x_{old}}$$\\
+When we are far away from the solution, gradient descent approaches the solution faster (since the gradient is higher). However, as we can see that as we get closer to the solution, the gradient becomes smaller and smaller, hence the rate of convergence decreases.\\\\
+This makes choosing the stepsize $\lambda$ significantly important, as it can lead to \textbf{overshooting}, if we have to high $\lambda$ or very slow convergence, if we have to low value of $\lambda$.\\\\
+Another thing that can be done is random restarts as the solution we get from Gradient Ascent/Descent depends on the initialization:
+\begin{itemize}
+    \item One way to make it less dependent is to use random restarts
+    \item Run multiple gradient descents with different, random initializations and keep the best overall solution
+    \item Can be done in parallel
+\end{itemize}
+
+
+\subsection{Newton Raphson Method}
+This is a similar iterative approach, in which for the current $x$ we take a \textbf{Newton Step}. Where the newton step $u$ is defined as:
+$$u = -\left[\triangledown^2 f_{x_{old}}(x) \right]^{-1}\triangledown f_{x_{old}}(x)$$
+We can find the "new" $x$ as:
+$$x_{new} = x_{old} + u$$
+$$x_{new} = x_{old} -\left[\triangledown^2 f_{x_{old}}(x) \right]^{-1}\triangledown f_{x_{old}}(x)$$\\
+The properties of the the Newton-Ralphson method are:
+\begin{itemize}
+    \item Fast convergence close to solution.
+    \item Not guaranteed to converge if started far from solution, may cycle or diverge in this case.\\
+\end{itemize}
+The \textbf{Quasi-Newton} methods:
+\begin{itemize}
+    \item Often, constructing the Hessian for a multivariate function is computationally difficult, because it takes $O(n^2)$ space and time and has to be done over and over.
+    \item So a number of methods exist that approximate the Hessian by using the Jacobian at nearby points.
+\end{itemize}
+
+\subsection{Convex Sets and Function}
+A set $C$ is \textbf{convex} if for any $0 \leq \lambda \leq 1$ we have:
+$$\forall x_1,x_2 \in C \implies \lambda x_1+ (1 - \lambda)x_2 \ \in C$$\\
+For a \textbf{convex function} $f$, we have the following inequality:
+$$f(\lambda x_1 + (1 - \lambda)x_2) \leq \lambda f(x_1) + (1-\lambda)f(x_2)$$
+For a convex function, every local optimum is also a global optimum.
+
+\section{Constrained Optimization}
+\textbf{Constrained Optimization} refers to optimizing a function $f$, given some other functions $g,...$ defined over the same space, where the input must satisfy a condition from the other function. These constraints define a \textbf{feasible region} where the solution must lie. A general expression is:
+$$\min_x f(x) \quad \textbf{such that}$$
+$$g_i(x) \geq 0, \ \forall i \in [1,...,m]$$
+$$h_j(x) = 0 \ \forall j \in [1,...,k$$
+
+\subsection{Linear Programming}
+\textbf{Linear Programming} is special case of constrained optimization where the objective and the constraints are all linear functions. A general expression for such problems is:
+$$\min_x \sum_{\forall i}c_ix_i \quad \textbf{such that}$$
+$$\sum_{\forall i}a_{ri}x_i \geq 0 \ \forall r \in [1,...,m]$$
+$$\sum_{\forall i}b_{si} = 0 \ \forall s \in [1,...,k]$$
+We can equivalently write them as:
+$$\min_x c^Tx$$
+$$Ax \geq 0$$
+$$Bx = 0$$
+This means that the feasible region is a \textit{polyhedron}, which is convex.
+
+\subsection{Simplex Algorithm}
+the \textbf{Simplex Algorithm} is an algorithm to optimize linear programming problems by moving around the polyhedron that describes the feasible region. It can more specifically be defined as:
+\begin{itemize}
+    \item Simple idea: around the polyhedron we go
+    \item From any feasible vertex, walk along the edges of the polyhedron, following the vertices
+    \item Once you are at a vertex where the neighboring vertices have higher f values, stop
+    \item This is a local optimum. But this is a convex problem, so this is also a global optimum.\\
+\end{itemize}
+The Simplex algorithm has the following properties:
+\begin{itemize}
+    \item Very simple, easy to implement and works well in practice
+    \item However,since it works by traversing vertices, and there might be exponentially many vertices for n constraints, the worst case runtime complexity is exponential.
+    \item Average case under various distributions has been shown to be polynomial, other algorithms exist, such as “interior point methods”, which have polynomial bounds.
+\end{itemize}
+
+
+\newpage
+
+\chapter{Probabilistic Learning}
+
+\section{Introduction to Probabilistic Learning}
+\textbf{Probabilistic Learning} refers to the family of algorithms that explicitly estimate probabilities of class membership. These include estimations of posterior, likelihood etc.\\\\
+The main objective of probabilistic learning is \textbf{Bayesian Decision Theory} which is that optimal thing to do is to choose hypothesis to minimize expected risk. The minimum expected risk is given by the following mathematical equation:
+$$\hat{h} = \text{arg}\min_h\int_DR(h|x,y)p(x) dx$$
+Where $\hat{h}$ is the expected risk and $R(h|x,y)$ is the risk function. Where the risk function is given by:
+$$R(h|x,y) = \sum_{\hat{y_j}}L(h(x) = \hat{y_j}p(h(x) = \hat{y_j})$$\\
+The uses of Probabilistic Learning are:
+\begin{itemize}
+    \item To produce natural “confidence estimates”.
+    \item Naturally incorporate “prior knowledge”
+    \item This can also give us tools to analyze some of our
+algorithms
+    \item This can generate data so it is be the basis for some modern generative ML algorithms.
+\end{itemize}
+
+\subsection{Probabilistic Classification}
+\textbf{Probabilistic Classification} refers to finding the most probable class of a new test example, this is also known as \textbf{Probabilistic Inference}.\\\\
+The Learning Task for Probabilistic Classification models is that given a set of data, learn a probabilistic model to predict probability of class membership (Estimation).\\\\
+The Two main Approaches to Probabilistic Classification which are based on what probability feature we are trying to model or learn, which are:
+\begin{itemize}
+    \item \textbf{Generative approaches}: In these we model the joint distribution $p(x,y)$.
+    \item \textbf{Discriminative approaches}: In these we model the conditional distribution $p(y|x)$.\\
+\end{itemize}
+
+\section{Naïve Bayes}
+\textbf{Naïve Bayes} is the simplest generative classifier for some given discrete data. This is based on the Naïve Bayes assumption, which is that all of the attributes are conditionally independent given the class. It is given mathematically as:
+$$P(X=x,Y=y) = P(X=x|Y=y)P(Y=y)$$
+$$P(X=x,Y=y) = P(x_1,x_2,\ldots,x_n|Y=y)P(Y=y)$$
+Using the Naïve Bayes assumption of conditional independence of the attributes:
+$$P(X=x,Y=y) = \prod_{\forall i}P(X=x_i|Y=y)P(Y=y)$$
+
+\subsection{Classification using Naïve Bayes}
+Classification using Naïve Bayes for each example $x$ calculates the joint distribution probability for the example and the positive $\&$ negative labels and chooses the label with the highest probability. In other words, for the example variable $x$, we will calculate $P(X = x, \ Y = \text{"positive"})$ and $P(X = x, \ Y = \text{"negative"})$ and the classifier will return the label with the higher probability.\\\\
+Using the Naïve Bayes assumption of conditional independence of attributes, we get:
+$$P(X=x,\ Y=\text{pos}) = \prod_{\forall i}P(X_i=x_i| \ Y=\text{pos})P(Y=\text{pos})$$
+$$P(X=x,\ Y=\text{neg}) = \prod_{\forall i}P(X_i=x_i| \ Y=\text{neg})P(Y=\text{neg})$$
+
+\subsection{Learning in Naïve Bayes Classifier}
+Just as any other classifier for a Naïve Bayes classifier the goal is given a set of observations, we have to \textbf{estimate parameters} $P(X_i=x_i|Y=y)$ and $P(Y=y)$. To estimate these parameters we will use Maximum Likelihood Estimation (MLE).\\\\
+Suppose we are given a set of examples $D$ and we are considering a set of candidate hypotheses $H$. The posterior probability of any hypothesis $h$ in $H$ is given by Bayes Rule as:
+$$P(h|D) = \frac{P(D|h)P(h)}{P(D)}$$
+If every hypothesis in $H$ has equal prior probability, only the first term matters. This gives the maximum likelihood (ML)
+hypothesis
+$$h_{ML} = \text{arg}\max_{\forall h \in H}P(D|h)$$
+
+\subsection{Maximum Likelihood Estimation}
+For naïve Bayes, a hypothesis is the vector of parameters, one for each of $P(X_i=x_i|Y=y)$ and $P(Y=y)$. For simplicity, we will that the features and class labels are binary, additonally we will use the following shorthand notations:
+\begin{itemize}
+    \item $P(X_i=1|Y=1)$ is a parameter, call it $\theta_{i1}$
+    \item Similarly, there’s another parameter for $P(X_i=1|Y=0)$, $\theta_{i0}$
+    \item $N_0$ and $N_1$ represent the number of examples with $y=0$ and $y=1$ respectively.
+    \item Finally there are two parameters for $P(Y=y)$, $\theta_y$ ($\theta_0$ and $\theta_1$—these sum to 1).
+\end{itemize}
+We get the following expression:
+$$P(D|h ) = \prod_{d=1}^m\prod_{i=1}^nP(X_i = x_i | Y = y_d ; \{\theta_{i0} , \theta_{i1} \} ) \theta_{yd}$$
+$$P(D|h) = \prod_{i=1}^n\theta_{i1}^{p_i}(1-\theta_{i1})^{N_1-p_i}\theta^{N_1}_1\prod_{i=1}^n\theta_{i0}^{d_i}(1-\theta_{i0})^{N_0-d_i}\theta^{N_0}_0$$
+We can define the Likelihood and Log-likelihood functions as:
+$$L(\theta_{k0}) =\hat{\theta}_{k0} = \text{arg}\max_{\theta_{k0}} \theta_{k0}^{d_k}(1-\theta_{k0})^{N_0-d_k}$$
+$$LL(\theta_{k0}) = d_klog(\theta_{k0})+(N_0-d_k)log(1-\theta_{k0})$$
+Taking the derivative of the Log-likelihood function to get the extreme points we get:
+$$\frac{\partial LL}{\partial \theta_{k0}}=\frac{d_k}{\theta_{k0}} - \frac{N_0 - d_k}{1-\theta_{k0}} = 0$$
+$$\implies \frac{d_k}{\theta_{k0}} = \frac{N_0 - d_k}{1-\theta_{k0}}$$
+Therefore, we get
+$$\hat{\theta}_{k0}=\frac{d_k}{N_0} = \frac{\textbf{examples with $Y=0$}}{\textbf{examples where $X_k=1$}}$$
+$$\hat{P}(X_i=1|Y=1) = \frac{\textbf{examples with $X_i = 1$ and $Y=1$}}{\textbf{examples with $Y = 1$}}$$
+$$\hat{P}(Y=1) = \frac{\textbf{examples with $Y=1$}}{\textbf{all examples}}$$
+
+\subsection{m-estimates}
+Sometimes we need to smooth the probability estimates because what happens if a certain value for a variable is not in our set of examples, for a certain class? In such case we use a smoothing process called $m$-estimates. Under this we get the following modified expression:
+$$\hat{P}(X_i=1|Y=1) = \frac{\#(\textbf{examples with $X_i = 1$ and $Y=1$}) + mp}{\#(\textbf{examples with $Y = 1$}) + m}$$
+Here,
+\begin{itemize}
+    \item $p$ is our prior estimate of the probability.
+    \item $m$ is called “Equivalent Sample Size” which determines the importance of $p$ relative to the observations.
+\end{itemize}
+If the variable has $v$ values, the specific case of $m=v$, $p=1/v$ is called \textbf{Laplace smoothing}.
+
+\subsection{Nominal Attributes}
+In the previous case we only used binary attributes, but what if we have nominal attributes with more than two types, i.e. we need to estimate parameters $P(X_i=v_k|Y=y)$. For this we can extend the definition of maximum likelihood estimates:
+$$P(X_i = v_k|Y=y) = \frac{P(X_i = v_k\land Y=y)}{P(Y=y)}$$
+$$P(X_i = v_k|Y=y) = \frac{\textbf{examples with }(X_i = v_k\land Y=y)}{\textbf{examples with }(Y=y)}$$
+
+\subsection{Continous Attributes}
+If $X_i$ is a continuous attribute, we can model $P(X_i|y)$ as a Gaussian distribution (“Gaussian naïve Bayes”). Mathematically:
+$$P(X_i|y) \approx N(\mu_{i|y}\sigma_{i|y})$$
+For these estimates we can define the mean and variance using maximum likelihood estimates as:
+$$\hat{\mu}_i = \frac{\sum_{\forall k}x_{ik}I(y_k=y)}{\sum_{\forall k}I(y_k=y)}$$
+$$\hat{\sigma}_i^2 = \frac{\sum_{\forall k}(x-\hat{\mu}_i)^2I(y_k=y)}{\sum_{\forall k}I(y_k=y)}$$
+
+\section{Logistic Regression}
+Logistic Regression is the simplest discriminative model that models log odds as a linear function. Mathematically,
+$$log\frac{P(Y=1|x)}{P(Y=-1|x)} = w\cdot x + b$$
+$$P(Y=1|x) = [1-P(Y=1|x)]e^{(w\cdot x+b)}$$
+$$P(Y=1|x)(1+e^{(w\cdot x+ b)}) = e^{(w\cdot x + b)}$$
+$$P(Y=1|x) = \frac{1}{1+e^{-(w\cdot x+b)}}$$
+
+\subsection{Classification with LR}
+Logistic Regression directly specifies $P(Y=1|x)$ and checks to see if it is greater than 1/2. Using the trained weights $w$ and the bias $b$, we can define $z$ as a linear function output of the data vector $x$ and send it to the sigmoid function.
+$$z = w\cdot x + b$$
+$$\sigma(z) = \frac{1}{1+e^{-z}}$$
+$$P(Y=1|x) = \sigma(z)$$
+
+\subsection{Estimating the Parameters}
+Using Maximum Likelihood Estimate, we can optimize the conditional log likelihood of the data. Mathematically,
+$$w,b = \text{arg}\max\prod_{i}P(Y_i = y_i|x_i)$$
+$$w,b = \text{arg}\max\sum_{i \in pos}logP(Y_i=1|x_i)+\sum_{i \in neg}logP(Y_i=-1|x_i)$$
+$$w,b = \text{arg}\max\sum_{i \in pos}log\left(\frac{1}{1+e^{-(w\cdot x+b)}}\right)+\sum_{i \in neg}log\left(1-\frac{1}{1+e^{-(w\cdot x + b)}}\right)$$
+We can then use gradient descent or newton-raphson method to optimize the parameters.
+
+\subsection{Overfitting Control}
+We can add an additionaly term to control overfitting by adding a penatly term that penalizes weights from getting too large. This changes the optimal weight equation from:
+$$w,b = \text{arg}\max\sum_{i \in pos}log\left(\frac{1}{1+e^{-(w\cdot x+b)}}\right)+\sum_{i \in neg}log\left(1-\frac{1}{1+e^{-(w\cdot x + b)}}\right)$$
+to:
+$$w,b = \text{arg}\min \frac{1}{2}\|w\|^2 + C\left[\sum_{i \in pos}log\left(\frac{1}{1+e^{-(w\cdot x+b)}}\right)+\sum_{i \in neg}log\left(1-\frac{1}{1+e^{-(w\cdot x + b)}}\right)\right]$$
+this new term uses negative log-likelihoods
+
+\subsection{Comparison with Naïve Bayes}
+While both Naïve Bayes and Logistic Regression are probabilistic classification models, these are some of there performance differences:
+\begin{itemize}
+    \item Logistic Regression can be more robust than Naïve Bayes, especially in the presence of irrelevant attributes. Since Logisitc Regression does not make the independence assumptions of Naïve Bayes.
+    \item Logistic Regression also handles continuous attributes nicely
+    \item With Logistic Regression (as with all discriminative models), there is no easy
+way to handle data issues such as missing data.
+\end{itemize}
+
+\chapter{Support Vector Machines}
+\section{Introduction to SVMs}
+Support Vector Machines, or SVMs for short, is a machine learning model that combines three fundamental ideas:
+\begin{itemize}
+    \item Linear discriminants
+    \item Margins
+    \item Kernels
+\end{itemize}
+Support Vector Machines undertake the task of classification by constructing $m-1$-dimensional hyperplanes for an $m$-dimenstional space
+
+\subsection{Linear Discriminants}
+Before we get started, I want to make one thing clear, when talking about Linear Discriminants, we generally take “linear” to mean linear in the classifier parameters, i.e. linear in $w$, but not necessarily in $x$.\\\\
+A linear discriminant has the general form:
+$$w\cdot\phi(x) + b = 0$$
+Here $\phi$ (aka “feature map”) is any vector function that goes from the domain of $x$ to $\mathbb{R}^m$. Here, $x$ need not be a number and $\phi$ could be arbitrary-dimensional. $\phi$ simply maps features to an $m$-dimensional vector space.
+
+\subsection{Margins}
+Very often with linear classifiers a situation may arise where all are equally good on the training sample. In such a situation But is there any one that we expect to generalize best?\\\\
+Imagine moving any linear classifier parallel to itself. The total amount that we can move until we hit an (some) example(s) is the \textbf{margin} of the linear classifier.\\\\
+The linear classifier with the maximum margin is called a \textbf{support vector machine} classifier. If we are in the input feature space , i.e.
+$\phi(x)=x$, this is called a linear SVM.\\\\
+The examples that touch the margin boundaries are called the support vectors.
+
+\subsection{Use of SVMs}
+Intuitively, “maximum margin” gives greatest robustness to errors in the data. Additonally, Generalization error is inversely proportional to margin. The classifier also depends on only a few data points, so it is
+“sparse” (has few parameters to learn) and is efficient to evaluate.
+
+\section{Calculating the Margin}
+\subsection{Plane Divisions}
+For other classifiers we often only define the classifier boundary, let us define some more planes for SVMs:
+\begin{itemize}
+    \item \textbf{Plus-plane:} aka "predict class +1 plane", it is defined by the plane:
+    $$w\cdot x + b = 1$$
+    \item \textbf{Minus-plane:} aka "predict class -1 plane", it is defined by the plane:
+    $$w\cdot x + b = -1$$
+\end{itemize}
+We will classify as:
+\begin{itemize}
+    \item +1 if $w\cdot x + b \geq 1$
+    \item -1 if $w\cdot x + b \leq -1$
+\end{itemize}
+
+\subsection{Properties of weight}
+We know that $w$ is perpendicular to the plane $w\cdot x+b=0$. Let $u, v$ be on the plane defined by $w\cdot x+b=0$, therefore we get,
+$$w\cdot(u - v)=w\cdot u - w\cdot v= (-b) - (-b) = 0$$
+Similarly, $w$ is also perpendicular to the plus and minus planes.
+
+\subsection{Problem Formulation}
+Let us choose an arbitrary point $x^+$ on the plus plane and its nearest point $x^-$ on the minus plane.\\\\
+Since $x^+-x^- = \lambda w \implies M = \|\lambda w\|_2$, we get:
+$$w\cdot x^+ + b = 1$$
+$$w\cdot(x^- + \lambda w) + b = 1$$
+$$\lambda w\cdot w = 2$$
+$$M = \|\lambda w\|_2 = \frac{2}{\|w\|_2}$$
+Hence maximizing the margin is equivalent here to minimizing the norm of the parameter vector.\\\\
+We can then state the problem of maximizing the margin while minimizing the weights that respect the correct labels on the training set.
+$$\max_{w,b}\frac{2}{\|w\|} = \min_{w,b}\frac{\|w\|^2}{2}$$
+With the labelling constraints we get:
+$$w\cdot x_i +b \geq 1 \quad \text{if $y_i =1$}$$
+$$w\cdot x_i +b \leq -1 \quad \text{if $y_i =-1$}$$
+equivalently for each example:
+$$y_i(w\cdot x_i +b) \geq 1$$
+Such problems are called \textbf{quadratic program}, where:
+$$\min_{w,b}\frac{\|w\|^2}{2}$$
+$$y_i(w\cdot x_i +b) \geq 1 \quad \forall i$$
+Since this problem is convex it has a globally unique solution. This problem can be solved easily using successive linearization.
+
+\section{Linearly Inseparable Data}
+While the previous example looked at linearly separable data, we will now look at a more applicable case which is linearly inseparable data. For linearly inseparable data the problem of misclassified points is something that we will look at.
+
+\subsection{Slack Variables}
+For linearly separable data we have:
+$$y_i(w\cdot x_i +b) \geq 1$$
+For linearly inseparable data we will introduce \textbf{slack} variables, represented as $\xi_i$ for each $i$-th example to convert the inequality constraint into an equality.
+
+\subsection{Problem Formulation}
+The new problem formulation here will be a tradeoff between generalization and error, mathematically:
+$$\min_{w,b,\xi_i}\frac{\|w\|^2}{2} + C\sum_{\forall i}\xi_i$$
+such that,
+$$y_i(w\cdot x_i +b) + \xi_i \geq 1 \quad \forall i$$
+$$\xi_i \geq 0 \quad \forall i$$
+
+
+\section{Non-Linear classifiers}
+\textbf{Important note:} In this section we are still focusing on linear classifiers with respect to $w$, but non-linear with respect to $x$.\\\\
+In the previous sections we covered decision surfaces that were linear in $x$, now we will focus on non-linear decision surfaces in $x$
+
+\subsection{SVM formulation}
+The problem formulation for non-linear classifiers with the non-linearity feature map $\phi(x)$ is give by:
+$$\min_{w,b,\xi_i}\frac{\|w\|^2}{2} + C\sum_{\forall i}\xi_i$$
+such that,
+$$y_i(w\cdot \phi(x_i) +b) + \xi_i \geq 1 \quad \forall i$$
+$$\xi_i \geq 0 \quad \forall i$$
+
+\subsection{Solving the quadratic program}
+To solve the quadratic program given  in the previous section we don't need to explicitly compute the feature map ($\phi(x)$) at all. Instead we can solve this using kernels and implicit feature maps. In order to solve this we will have to construct the dual form of the SVM’s Quadratic Program using the “Generalized Lagrangian”.
+
+\subsection{Generalized Lagrangian}
+Let us consider the constrained optimization problem given by:
+$$\min_{w}f(w)$$
+such that,
+$$g_i(w) \leq 0$$
+$$h_j(w) = 0$$
+To solve this optimization problem we will have the generalized Lagrangian defined by:
+$$l(w,\boldsymbol\alpha,\boldsymbol\beta) = f(w) + \sum_i\alpha_ig_i(w) + \sum_{j}\beta_jh_j(w)$$
+here $\boldsymbol\alpha$ and $\boldsymbol\beta$ are the Lagrangian multipliers.\\\\
+For the linearly-separable SVM we have:
+$$\min_{w,b}\frac{\|w\|^2}{2}$$
+$$y_i(w\cdot x_i +b) \geq 1 \quad \forall i$$
+So the generalized Lagrangian of the linearly-seperable SVM is given by:
+$$l(w,b,\boldsymbol\alpha) = \frac{1}{2}\|w\|^2 - \sum_i\alpha_i\left[y_i(w\cdot x_i + b) - 1\right]$$
+
+\subsection{Lagrange Duality}
+Let us consider a Lagrangian problem given by:
+$$P(w) = \max_{\boldsymbol\alpha,\boldsymbol\beta:\boldsymbol\alpha\geq0} l(w,\boldsymbol\alpha,\boldsymbol\beta)$$
+The Primal Problem can be rewritten as:
+$$P(w) = \max_{\boldsymbol\alpha,\boldsymbol\beta:\boldsymbol\alpha\geq0} f(w) + \sum_i\alpha_ig_i(w) + \sum_{j}\beta_jh_j(w)$$
+$$P(w) = \begin{cases}
+    f(w) \quad \text{if the constraints on $g$ and $h$ are met}\\
+    \infty \quad \quad \text{otherwise}
+\end{cases}$$
+So we can rewrite the original problem as:
+$$\min_wP(w) = \min_w\max_{\boldsymbol\alpha,\boldsymbol\beta:\boldsymbol\alpha\geq0} l(w,\boldsymbol\alpha,\boldsymbol\beta)$$
+The Dual problem $D(\boldsymbol{\alpha,\boldsymbol{\beta}})$ corresponding to the primal problem $P(w)$ will be:
+$$\max_{\boldsymbol\alpha,\boldsymbol\beta:\boldsymbol\alpha\geq0} D(\boldsymbol{\alpha,\boldsymbol{\beta}}) = \min_w\max_{\boldsymbol\alpha,\boldsymbol\beta:\boldsymbol\alpha\geq0} l(w,\boldsymbol\alpha,\boldsymbol\beta)$$
+We have,
+$$l(w,b,\boldsymbol\alpha) = \frac{1}{2}\|w\|^2 - \sum_i\alpha_i\left[y_i(w\cdot x_i + b) - 1\right]$$
+$$\triangledown_wl(w,b,\boldsymbol\alpha) = w - \sum_{i}\alpha_iy_ix_i = 0$$
+$$\therefore w = \sum_i\alpha_iy_ix_i$$
+$$\triangledown_bl(w,b,\boldsymbol\alpha) = \sum_i\alpha_iy_i = 0$$
+We therefore obtain the following values for $w$:
+$$w = \sum_i\alpha_iy_ix_i;w = \sum_i\alpha_iy_i = 0$$
+Substituting these values into the dual we get:
+$$\max_{\alpha}D(\boldsymbol{\alpha}) = \sum_i\alpha_i -\frac{1}{2} \sum_{i,j}y_iy_j\alpha_i\alpha_jx_i\cdot x_j$$
+such that,
+$$\boldsymbol{\alpha} \geq 0, \quad \sum_i\alpha_iy_i = 0$$
+
+\subsection{Karush-Kuhn-Tucker Conditions}
+At the optimal primal/dual solution, the following conditions will hold, which are known as the Karush-Kuhn-Tucker conditions:
+\begin{itemize}
+    \item \textbf{Zero Gradient at the solution:}
+    $$\triangledown_{w,b}l(w^*,b^*,\boldsymbol\alpha^*) = 0$$
+    \item \textbf{All constraints satisfied:}
+    $$y_i(w\cdot x_i +b) \geq 1 \quad \forall i$$
+    $$\alpha^*_i \geq 0 \quad \forall i$$
+    \item \textbf{Karush-Kuhn-Tucker dual complementarity:}
+    $$\alpha_i^*\left[y_i(w^*\cdot x_i + b^*) - 1\right] = 0$$
+\end{itemize}
+
+\section{Kernels}
+In Support Vector Machines the function of the kernel is to take data as input and transform it into the required form to be used forward in the optimization process.
+
+\subsection{Kernel Definition}
+For SVMs we can define the Kernel $K$ for the examples to be:
+$$K(x_i,x_j) = \phi(x_i)\cdot\phi(x_j)$$
+If we have $m$ examples, we get an $m\times m$ Kernel matrix.
+
+\subsection{Non-Linear SVM Dual Form}
+The introduction of Kernels makes it very easy for us to use the Linearly Seperable dual problem and modify it for non-linear SVMs. We take the linear form, given by:
+$$\max_{\alpha}D(\boldsymbol{\alpha}) = \sum_i\alpha_i -\frac{1}{2} \sum_{i,j}y_iy_j\alpha_i\alpha_jx_i\cdot x_j$$
+such that,
+$$\boldsymbol{\alpha} \geq 0, \quad \sum_i\alpha_iy_i = 0$$
+and introduce the Kernel matrix to get the non-linear dual form which is:
+$$\max_{\alpha}D(\boldsymbol{\alpha}) = \sum_i\alpha_i -\frac{1}{2} \sum_{i,j}y_iy_j\alpha_i\alpha_jK(x_i,x_j)$$
+such that,
+$$\boldsymbol{\alpha} \geq 0, \quad \sum_i\alpha_iy_i = 0$$
+
+\subsection{Valid Kernels}
+To obtain a valid kernel, it must satisfy \textbf{Mercer's conditions}, which is:\\\\
+Let $K: \mathbb{R}^n\times\mathbb{R}^n \to \mathbb{R}$ be a function. $K$ is a valid kernel if and only if for all finite $\{x_1,x_2,\ldots,x_m\}$, the kernel matrix is symmetric positive semidefinite.\\\\
+Symmetry: $K (x, y) = K (y, x)$\\
+Positive Semidefinite: $(K \geq 0): \quad \forall v \neq 0, \ v^TKv \geq 0$
+
+\section{Classification}
+Now that we know the dual form of the generalized SVM which is given by:
+$$\max_{\alpha}D(\boldsymbol{\alpha}) = \sum_i\alpha_i -\frac{1}{2} \sum_{i,j}y_iy_j\alpha_i\alpha_jK(x_i,x_j)$$
+such that,
+$$\boldsymbol{\alpha} \geq 0, \quad \sum_i\alpha_iy_i = 0$$
+We can classify any new datapoint $x_{new}$ by:
+$$w\cdot\phi(x_{new}) = \sum_{i\in SV}\alpha_iy_iK(x_i,x_{new})$$
+
+
+%---------------------------------------------------------------------
+
+\chapter{Neural Networks}
+
+\section{Neurons}
+The way neurons work in real life is that whenever an input reaches a certain threshold, it rapidly activates and peaks, i.e. it goes from a resting voltage to a higher voltage in a snap. we can make artificial neurons aka \textbf{perceptrons}.\\\\
+The basic idea behind perceptrons is that when the weighted sum of the inputs is greater than the threshold, it gets activated (fired up). To define a perceptron, we have the following attributes:
+\begin{itemize}
+    \item \textbf{input vector:} $x$, with entries $x_1,x_2,...,x_n$
+    \item \textbf{weight vector:} $w$, associated with $x$ with entries $w_1,w_2,...,w_n$
+    \item \textbf{threshold:} $\sigma$, a scalar.\\
+\end{itemize}
+We can then define it mathematically:
+$$h(w,x,\sigma) = \begin{cases}
+    +1 \text{, if } w\cdot x \geq \sigma\\
+    -1 \text{, if } w\cdot x < \sigma 
+\end{cases} = \textbf{sign}(w\cdot x - \sigma)$$\\
+The parameters of the perceptron are the weight vector $w$ and the threshold $\sigma$. These parameters are obtained through the \textbf{learning process} over the input-target space.\\\\
+\subsection{Neural Network Representation}
+\textbf{Represenatation Ability} of Neural Networks:
+\begin{itemize}
+    \item Every Boolean function can be represented by a network with one hidden layer of units (Minsky and Papert). 
+    \item Every bounded continuous function can be represented by a network with one hidden layer (Cybenko et al). 
+    \item Every function on $\mathbb{R}^n$ can be represented by a network with two hidden layers.
+\end{itemize}
+
+
+\section{Loss Function}
+The loss function is a function that measures the difference between our current estimates of $y$, called $\hat{y}$ and the true $y$ (which is known) over all of training examples, with respect to the parameters of the neural network $w, \sigma$. Then our goal will be to minimize the loss function with respect to $(w, \sigma)$. This function is denoted as:
+$$L(w, \sigma)$$
+That is, we have to find the parameters $\{w_1,w_2,...,w_n, \sigma\}$ that minimize $L(w,\sigma)$.\\\\
+One common Loss function is known as the \textbf{squared loss} function, this Loss function measures the squared difference between the actual and predicted value of $y$ over all of the $m$ samples. Mathematically, it is defined as:
+$$L(w) = \frac{1}{2}\sum^m_{i=1}\left(y_i-\hat{y_i} \right)^2 = \frac{1}{2}\sum^m_{i=1}\left(y_i - w\cdot x_i \right)^2$$
+
+\subsection{Iterative Parameter Update}
+As mentioned before, our objective is to find the parameters of the neuron $\{w_1,w_2,...w_n,\sigma\}$ such that we can minimize the loss function of the neural network. As seen before in optimization, to minimize any function, we need to find the arguments for which the gradient (or Jacobian) of the fucntion is zero. Mathematically,
+$$\triangledown_wL = 0$$
+We know that:
+$$\triangledown_wL = \begin{bmatrix}
+    \frac{\partial L}{\partial w_1} & \frac{\partial L}{\partial w_2} & \ldots &
+    \frac{\partial L}{\partial w_n}
+\end{bmatrix}$$
+Using the chain rule we get,
+$$\triangledown_wL = \sum^m_{i=1}\left(y_i - w\cdot x_i \right)(-x_i)$$
+Hence, we can update our parameters iteratively by:
+$$w \gets w - \eta \triangledown_wL$$
+where $\eta$ is the learning rate or the step size.\\\\
+This is gradient descent and the loss function is differentiable everywhere and bounded below and it has a well defined and unique minimum exists for any $D$ and this iterative procedure will find it.
+
+\subsection{Regular and Stochastic Gradient Descent}
+Unlike regular gradient descent where you sum the gradients across all examples, in \textbf{Stochastic Gradient Descent} you perform this update separately for each example (or a few examples).\\\\
+Mathematically, $\forall i \in [1\ldots m]$, Stochastic Gradient Descent is given by:
+$$\triangledown_w\Tilde{L} = \left(y_i - w\cdot x_i\right)(-x_i)$$
+$$w \gets w - \eta \triangledown_w\tilde{L}$$\\
+Since the total gradient is a vector sum, this isn’t the same as summing the gradient first. Since it is incremental, useful for \textit{online updates} and can help with local minima (when it exists).
+
+\section{Hidden Layers}
+For every \textbf{Hidden Layer}, we must have a Hidden Layer Activation Function, denoted as $h(x)$, that must be differentiable so that we can optimize it. Some of the common activation functions for Hidden Layers of a neural network are:
+\begin{itemize}
+    \item \textbf{Sigmoid Function:}
+    $$h(x;w) = \frac{1}{1+e^{-w\cdot x}}$$
+    \item \textbf{Radial Basis Function:}
+    $$h(x;w,c,\beta) = e^{\beta\|w\cdot x - c\|^2}$$
+    \item \textbf{Hyperbolic Tangent:}
+    $$h(w;w,a,b) = a\frac{e^{bw\cdot x}-e^{-bw\cdot x}}{e^{bw\cdot x}+e^{-bw\cdot x}}$$
+\end{itemize}
+
+\subsection{Backpropogration}
+\textbf{Backpropogation} refers to feeding the examples forward through the network, observe the output and calculate the loss. In Backpropogation we perform“layer-wise” gradient descent on the loss function with respect to each weight, starting with output layer. For each weight in each layer, calculate its contribution to the overall loss using the chain rule. Update the weight in the negative gradient direction.
+
+\subsection{Equation for Backpropogration}
+Let:
+\begin{itemize}
+    \item $x_{ji}$ be the $i$-th input to unit $j$.
+    \item $w_{ji}$ be the weight associated by $x_{ji}$.
+    \item $n_j$ be the net input to unit $j$, $n_j = \sum_{\forall i}w_{ji}x_{ji}$.
+\end{itemize} 
+We hence get:
+$$\frac{\partial L}{\partial w_{ji}} = \frac{\partial L}{\partial n_j}\frac{\partial n_j}{\partial w_{ji}} = \frac{\partial L}{\partial n_j}x_{ji}$$
+If we choose the activation function as a sigmoid function $h(u) = \frac{1}{1+e^{-u}}$, we have it's derivative as:
+$$\frac{\partial h(u)}{\partial u} = h(u)(1-h(u))$$
+Since we have the loss function defined as: $L(w_{ji}) = \frac{1}{2}\left( y_j - h(n_j)\right)^2$, so we get:
+$$\frac{\partial L}{\partial n_j} = (h(n_j) - y_j)\frac{\partial h(n_j)}{\partial n_j}$$
+Where,
+$$\frac{\partial h(n_j)}{\partial n_j} = h(n_j)(1-h(n_j))$$
+So we get the final equation as:
+$$\frac{\partial L}{\partial w_{ji}} = (h(n_j) - y_j)h(n_j)(1-h(n_j))x_{ji}$$
+
+\subsection{Backpropogation for Hidden Layer Nodes}
+For an interior hidden layer node, we only need to look at all of the downstream nodes of unit $j$, because those are the only nodes that it affects. the downstream layer refers to the layer that comes right after the layer unit $j$ is in.\\
+\textbf{Note:} DS is the shorthand notation for "Downstream".
+$$\frac{\partial L}{\partial n_j} = \sum_{\forall k \in DS(j)}\frac{\partial L}{\partial n_k}\frac{\partial n_k}{\partial n_j}$$
+Here $l$ represents all of the neurons in the same layer as $j$.
+$$n_k = \sum_{\forall l}w_{kl}h(n_l)$$
+$$\frac{\partial n_k}{\partial n_j} = \frac{\partial (w_{kj}h(n_j))}{\partial n_j} = w_{kj}\frac{\partial h(n_j)}{\partial n_j} = w_{kj}h(n_j)(1-h(n_j))$$
+$$\frac{\partial L}{\partial n_j} = h(n_j)(1-h(n_j))\sum_{\forall k \in DS(j)}\frac{\partial L}{\partial n_k}w_{kj}$$
+So for the $j$-th unit we get:
+$$\frac{\partial L}{\partial w_{ji}} = \frac{\partial L}{\partial n_j}x_{ji}$$
+$$\frac{\partial L}{\partial w_{ji}} = h(n_j)(1-h(n_j))x_{ji}\sum_{\forall k \in DS(j)}\frac{\partial L}{\partial n_k}w_{kj}$$
+$$\frac{\partial L}{\partial w_{ji}} = h(n_j)(1-h(n_j))x_{ji}\sum_{\forall k \in DS(j)}\frac{\partial L}{\partial w_{kj}}\frac{w_{kj}}{x_{kj}}$$
+
+\section{Scaling Neural Network}
+\subsection{Scaled ANN}
+Suppose we create an ANN with lots of layers.
+\begin{itemize}
+    \item Why might we want to do that?
+    \item What will the layers do?
+    \item How can learning scale?
+    \item finish\\
+\end{itemize}
+\textbf{Why do we need many layers?}\\
+In theory, two layers are enough. However in practice, this means that those layers would need to have \textit{large number of nodes} and \textit{have no structure} to exploit. Empirically speaking, networks with more layers and less nodes per layer perform better.\\\\
+One way to interpret hidden units in ANNs is as “constructors” of a high-dimensional nonlinear (w.r.t. original attributes) space in which classification is possible with a perceptron. Each layer then is an abstraction, i.e., a feature constructor that builds on previous features.\\\\
+
+\subsection{Computation Scaling}
+Neural networks are computation graphs, so we can view each layer as a matrix/vector operation on the previous layer. Mathematically, if we have a weight matrix $W$ and an input vector $z$, we can do the neural network computations as the following image:
+
+$$\begin{bmatrix}
+    w_{13} & w_{23}\\
+    w_{14} & w_{24}
+\end{bmatrix}\begin{bmatrix}
+    z_1\\
+    z_2
+\end{bmatrix} = W^lz^l$$
+$$z^{l+1} = h(W^lz^l)$$
+$$z^{l+2} = h(W^{l+1}z^{l+1})$$
+
+\begin{figure}[!htb]
+    \centering
+    \includegraphics[width=8cm, height=6cm]{images/Screenshot 2023-10-25 at 10.55.38 AM.png}
+    \caption{Computational Graph}
+    \label{fig:parity}
+\end{figure}
+
+\subsection{Backpropogation as Matrix Computation}
+Since the forward computation is layer-wise, the gradients can be expressed using vectors and matrices as well. Mathematically:
+$$\hat{y} = h(wz)$$
+$$L(w) = \frac{1}{2}\left(y - \hat{y}\right)^2$$
+$$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}}\frac{\partial \hat{y}}{\partial w}$$
+$$\frac{\partial L}{\partial w} = (\hat{y} - y)\hat{y}(1-\hat{y})z$$
+
+\section{Convolutional Neural Networks}
+
+\subsection{Locality and Invariance}
+As the network grows, the number of parameters can scale quadratically with layer size. Suppose the input is a complex object like a 256x256 image and each pixel is an input node, if there are an equal number of hidden units, there would be $(256)^4=4e^9$ weights per layer.\\\\
+So to create a network that scales, we can:
+\begin{itemize}
+    \item Let each hidden unit only look at a \textit{local part} of
+the input, \textbf{Locality}.
+    \item Let different hidden units compute the \textit{same
+feature} for different local regions \textbf{Invariance}.
+\end{itemize}
+
+\subsection{Kernels in CNNs}
+
+Introduce a \textbf{kernel} $k$ : a set of weights replicated across multiple local regions. Generally multiple such kernels will be used where each kernel computes one local feature. The operation of applying the kernel to the input is called \textbf{convolution}.\\\\
+Mathematically, Convolution is a linear operation, i.e. Can also be represented as a matrix operation. The output $z$ will have roughly $n/s$ entries. We can represent a convolution as:
+$$z = w\cdot x$$
+$$z_i = \sum^l_{j=1}k_jx_{i+j-(l+1)/2}$$\\
+A kernel detects a specific feature. In a Convolutional Neural Networks, the kernels (detectors/filters) themselves can be learned, i.e. parameterize as a set of weights, and learn via backpropagation.\\\\
+Each convolution kernel creates one “feature detector” that is looking for a specific property in a local patch. Typically, will have many such kernels, each looking for a different feature. In order to maintain locality and invariance, instead of concatenating these kernels, we stack them along a new dimension. If the input has two dimensions or more (e.g. images, video) then this results in a multidimensional matrix at each layer, so the stacking of kernels will create a tensor.\\\\
+An example of this is:
+\begin{itemize}
+    \item Suppose we have a batch of $32\times 32$ images, i.e. Each input has dimensions $(32, 32)$.
+    \item  Suppose we apply 10 $4\times4$ kernels to each
+image with stride $1\times1$.
+    \item The output will be a tensor with dimensions $(10, 32, 32)$.\\
+\end{itemize}
+
+\subsection{Pooling}
+
+\textbf{Pooling Layers:}
+\begin{itemize}
+    \item A pooling layer aggregates information from an adjacent layer
+    \item Average pooling: $k=(1/l, 1/l,...1/l)$
+    \item Max pooling: computes the maximum value of
+$l$ inputs
+    \item For each feature detector, identifies whether that feature was found somewhere in the previous layer.
+    \item Down samples input by factor of $l$.
+\end{itemize}
+
+\subsection{Vanishing Gradients}
+A key problem in ANNs is vanishing gradients. The \textbf{Vanishing Gradient} problem is a phenomenon that occurs during the training of deep neural networks, where the gradients that are used to update the network become extremely small or "vanish" as they are backpropogated from the output layers to the earlier layers.\\\\
+To prevent vanishing gradients, we can use the “Rectified Linear Unit” (ReLU) activation function, which is mathematically given by:
+$$h(x) = \text{max}(0,x)$$\\
+Additionally, Each layer in an ANN learns a completely new
+representation from the previous layer, this can cause catastrophic failure due to one “bad” layer. Instead, each layer can add on to the learned representation of the previous layer, this allows building much deeper structures robustly.\\\\
+\textbf{Residual Networks:}\\
+Perturbing the representation is done through adding a “residual” function to each layer. where you replace:
+$$z^{l+1} = h(W^lz^l)$$
+with:
+$$z^{l+1} = h(z^l f(z^l))$$
+Where $f$ is called the \textbf{residual function} of the layer, it is learned from the data, and can also just be the identity.\\
+
+\section{Overfitting}
+ANNs are very prone to overfitting the data that we train it on, because:
+\begin{itemize}
+    \item The learned structure can be very complex with lots of parameters.
+    \item The learned decision surface can be very nonlinear.\\
+\end{itemize}
+\subsection{Weight Decay}
+One strategy to control overfitting is to add a \textbf{weight decay} term to the loss function which will prevent weights from growing too large. Mathematically, it is represented as:
+$$L_{OC}(w) = L(w) + \gamma\sum_{\forall i}\sum_{\forall j}w_{ji}^2$$
+Here $\gamma$ is the \textit{tradeoff parameter} and $w_{ji}^2$ is the \textit{complexity penalty}. The entire summation part is known collectively as the weight decay.
+\subsection{Dropout Regularization}
+This refers to the strategy where at each backprop step, randomly sample a set of hidden units to leave out of the update because it forces different feature detectors to do useful work in the final classifier. The Classifier hence produced is more robust.
+
+\section{Implementation of Neural Networks}
+\subsection{Input Standardization}
+Since ANNs use linear functions, if inputs are badly scaled, can lead to problems at runtime, for instance: Average human weight=$6e+10 \mu g$, height=$1.7e-18$ light years. To avoid this, we can standardize the input to have zero mean and unit variance. Mathematically,
+$$x_i \gets \frac{x_i - \mu_i}{\sigma_i}$$\\
+\subsection{Batch Normalization}
+This kind of standardization can also be done at the node level. Suppose for a node $z$, the values of $z$ for each example $i$ are $z_i$, in batch normalization we will replace $z_i$ with:
+$$\hat{z_i} = \beta + \gamma\frac{z_i - \mu}{\sqrt{\varepsilon + \sigma^2}}$$
+Batch Normalization empirically improves performance.\\\\
+\subsection{Nominal Features}
+If data is described by nominal features, we will need to re-encode it using the following techniques:
+\begin{itemize}
+    \item \textbf{1 of n:} $N$ input units for each nominal attribute with $N$ values, only 1 is active for each example.
+    \item \textbf{Logarithmic:} $log(N)$ input units for each nominal attribute with $N$ values, where each input is represented as a binary code.\\
+\end{itemize}
+\subsection{Initialization}
+When initializing, generally set weights to small random values, but some random choices work better than others. One choice is \textbf{Xavier initialization} where we choose weights from a normal distribution with mean 0 and variance $\frac{2}{n_i+n_0}$.
+
+\newpage
+
+
+%------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+\end{document}
