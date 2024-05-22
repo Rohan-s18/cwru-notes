@@ -7,6 +7,7 @@ This directory contains the README and LaTex notes for some of the classes offer
 These are the classes offered by the department of computer sceince for which I have notes in this repository:  
   - CSDS 233: Data Structures  
   - CSDS 310: Algorithms  
+  - CSDS 337: Compiler Design  
   - CSDS 338: Operating Systems
   - CSDS 345: Programming Language Concepts  
   - CSDS 386: Quantum Computing
